@@ -1,0 +1,53 @@
+{
+  "project": "MedVista Health Network Executive Dashboard",
+  "purpose": "Reference context for the Gemini-powered dashboard chatbot.",
+  "lastCurated": "2026-05-26",
+  "sourceOfTruth": [
+    "frontend/Accelerate-main/src/lib/data/index.ts",
+    "frontend dashboard filters sent from DashboardContext",
+    "server-side exact metric calculations in src/lib/chat/dashboardContext.ts"
+  ],
+  "bedAvailability": {
+    "totalBeds": 420,
+    "occupiedBeds": 348,
+    "availableBeds": 72,
+    "occupancyRate": "82.9%",
+    "icu": {
+      "totalBeds": 44,
+      "occupiedBeds": 41,
+      "availableBeds": 3
+    },
+    "wards": [
+      { "ward": "General A", "total": 120, "occupied": 98, "available": 22, "icu": false },
+      { "ward": "General B", "total": 100, "occupied": 82, "available": 18, "icu": false },
+      { "ward": "Cardiac ICU", "total": 24, "occupied": 22, "available": 2, "icu": true },
+      { "ward": "Medical ICU", "total": 20, "occupied": 19, "available": 1, "icu": true },
+      { "ward": "Pediatric", "total": 40, "occupied": 28, "available": 12, "icu": false },
+      { "ward": "Maternity", "total": 50, "occupied": 44, "available": 6, "icu": false },
+      { "ward": "Emergency", "total": 30, "occupied": 24, "available": 6, "icu": false },
+      { "ward": "Oncology", "total": 36, "occupied": 31, "available": 5, "icu": false }
+    ]
+  },
+  "keyMetrics": {
+    "totalRevenueMTD": "₹42.8 Cr",
+    "netProfit": "₹6.2 Cr",
+    "ebitda": "₹9.4 Cr",
+    "opdPatientsToday": 2847,
+    "ipdAdmissions": 186,
+    "icuOccupancy": "89%",
+    "bedOccupancyKpi": "82.4%",
+    "avgLengthOfStay": "4.2 days",
+    "otUtilization": "76%",
+    "claimApprovalRate": "91.2%",
+    "patientSatisfaction": "4.6/5",
+    "readmissionRate": "3.8%",
+    "emergencyCases": 124
+  },
+  "executiveSignals": [
+    "Mumbai Central ICU is at 96% with 2 ventilators available.",
+    "Orthopedics revenue is down 14% versus forecast this week.",
+    "Delhi NCR emergency wait time averages 47 minutes and exceeds the 30 minute SLA.",
+    "Diagnostics and pharmacy are high-margin growth drivers.",
+    "Projected bed occupancy is 86.2% with 91% confidence."
+  ]
+}

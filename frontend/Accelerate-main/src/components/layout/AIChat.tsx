@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Sparkles, Bot, User } from "lucide-react";
 import { useDashboard } from "@/context/DashboardContext";
-import { chatResponses } from "@/lib/data";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,22 +11,13 @@ interface Message {
 }
 
 const suggestions = [
-  "Why did profitability decline this week?",
-  "What departments are underperforming?",
-  "Predict ICU occupancy next month.",
+  "How many beds are available?",
+  "What is ICU availability?",
+  "Which departments are underperforming?",
 ];
 
-function getAIResponse(input: string): string {
-  const lower = input.toLowerCase();
-  if (lower.includes("profit") || lower.includes("decline")) return chatResponses.profitability;
-  if (lower.includes("department") || lower.includes("underperform")) return chatResponses.departments;
-  if (lower.includes("icu") || lower.includes("occupancy") || lower.includes("predict"))
-    return chatResponses.icu;
-  return chatResponses.default;
-}
-
 export function AIChat() {
-  const { chatOpen, setChatOpen } = useDashboard();
+  const { chatOpen, setChatOpen, filters, lastUpdated } = useDashboard();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -43,15 +33,51 @@ export function AIChat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     if (!text.trim()) return;
-    setMessages((m) => [...m, { role: "user", content: text }]);
+    const userMessage: Message = { role: "user", content: text };
+    const nextMessages = [...messages, userMessage];
+
+    setMessages(nextMessages);
     setInput("");
     setTyping(true);
-    setTimeout(() => {
-      setMessages((m) => [...m, { role: "assistant", content: getAIResponse(text) }]);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          messages: nextMessages,
+          filters,
+          activePage: window.location.pathname,
+          lastUpdated: lastUpdated.toISOString(),
+        }),
+      });
+      const data = await response.json();
+
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content:
+            data.reply ||
+            data.error ||
+            "I could not generate an answer from the dashboard context right now.",
+        },
+      ]);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content:
+            "I could not reach the chat service. Check that the Next.js server is running and Gemini is configured.",
+        },
+      ]);
+    } finally {
       setTyping(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -142,11 +168,13 @@ export function AIChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && send(input)}
+                  disabled={typing}
                   placeholder="Ask anything about hospital performance..."
                   className="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
                 />
                 <button
                   onClick={() => send(input)}
+                  disabled={typing || !input.trim()}
                   className="p-2 rounded-xl gradient-header text-white"
                 >
                   <Send className="h-4 w-4" />

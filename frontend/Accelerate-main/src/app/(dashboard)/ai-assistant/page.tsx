@@ -5,7 +5,7 @@ import { Send, Mic, Sparkles, Bot } from "lucide-react";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { chatResponses } from "@/lib/data";
+import { useDashboard } from "@/context/DashboardContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,26 +13,15 @@ interface Message {
 }
 
 const suggestions = [
-  "Why did profitability decline this week?",
+  "How many beds are available?",
+  "What is ICU availability?",
   "What departments are underperforming?",
   "Predict ICU occupancy next month.",
   "Which doctors are at burnout risk?",
-  "Should we expand ICU capacity?",
 ];
 
-function getAIResponse(input: string): string {
-  const l = input.toLowerCase();
-  if (l.includes("profit") || l.includes("decline")) return chatResponses.profitability;
-  if (l.includes("department") || l.includes("underperform")) return chatResponses.departments;
-  if (l.includes("icu") || l.includes("occupancy") || l.includes("predict")) return chatResponses.icu;
-  if (l.includes("burnout") || l.includes("doctor") || l.includes("staff"))
-    return "Dr. Mehta (score 78) and Dr. Rao (score 70) are at HIGH burnout risk. Recommend mandatory rest and shift redistribution.";
-  if (l.includes("expand") || l.includes("capacity"))
-    return "Based on 7-day AI forecast, ICU will hit 93% on Day 5. Recommend adding 4-6 ICU beds at Mumbai Central.";
-  return chatResponses.default;
-}
-
 export default function AIAssistantPage() {
+  const { filters, lastUpdated } = useDashboard();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -48,20 +37,56 @@ export default function AIAssistantPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     if (!text.trim()) return;
-    setMessages((m) => [...m, { role: "user", content: text }]);
+    const userMessage: Message = { role: "user", content: text };
+    const nextMessages = [...messages, userMessage];
+
+    setMessages(nextMessages);
     setInput("");
     setTyping(true);
-    setTimeout(() => {
-      setMessages((m) => [...m, { role: "assistant", content: getAIResponse(text) }]);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          messages: nextMessages,
+          filters,
+          activePage: window.location.pathname,
+          lastUpdated: lastUpdated.toISOString(),
+        }),
+      });
+      const data = await response.json();
+
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content:
+            data.reply ||
+            data.error ||
+            "I could not generate an answer from the dashboard context right now.",
+        },
+      ]);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content:
+            "I could not reach the chat service. Check that the Next.js server is running and Gemini is configured.",
+        },
+      ]);
+    } finally {
       setTyping(false);
-    }, 1400);
+    }
   };
 
   return (
     <DashboardPage title="AI CEO Assistant">
-      <Card className="flex flex-col ring-1 ring-[var(--primary)]/10" style={{ height: "calc(100vh - 140px)", minHeight: 500 }} hover={false}>
+      <Card className="flex h-[calc(100vh-140px)] min-h-[500px] flex-col ring-1 ring-[var(--primary)]/10" hover={false}>
         <div className="flex items-center justify-between p-5 border-b border-[var(--border)] shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--primary)] text-white">
@@ -123,13 +148,14 @@ export default function AIAssistantPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send(input)}
+              disabled={typing}
               placeholder="Ask MedMind anything about your hospital..."
               className="flex-1 h-10 px-4 rounded-lg border border-[var(--border)] bg-[var(--card)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]"
             />
             <Button variant="outline" size="icon" title="Voice">
               <Mic className="h-4 w-4" />
             </Button>
-            <Button size="icon" onClick={() => send(input)}>
+            <Button size="icon" onClick={() => send(input)} disabled={typing || !input.trim()}>
               <Send className="h-4 w-4" />
             </Button>
           </div>

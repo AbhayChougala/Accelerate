@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Card, CardHeader } from "./card";
+import { Card, CardHeader } from "@/components/ui/card";
 
 export function ChartContainer({
   title,
