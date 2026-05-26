@@ -1,5 +1,6 @@
 import {
   aiRecommendations,
+  bedAvailability,
   branchComparison,
   ceoKpis,
   claimMetrics,
@@ -10,7 +11,6 @@ import {
   revenueTrend,
   todaySnapshot,
   topDepartments,
-  wardOccupancy,
   weeklyOccupancy,
 } from "@/lib/data";
 import type { FilterState } from "@/lib/types";
@@ -18,6 +18,7 @@ import type { FilterState } from "@/lib/types";
 export interface ChatDashboardContext {
   filters: FilterState;
   activePage?: string;
+  pageTitle?: string;
   lastUpdated?: string;
   exactMetrics: {
     beds: {
@@ -63,35 +64,27 @@ const defaultFilters: FilterState = {
 export function buildDashboardContext(input?: {
   filters?: Partial<FilterState>;
   activePage?: string;
+  pageTitle?: string;
   lastUpdated?: string;
 }): ChatDashboardContext {
-  const wards = wardOccupancy.map((ward) => ({
-    ...ward,
-    available: ward.total - ward.occupied,
-  }));
-  const total = wards.reduce((sum, ward) => sum + ward.total, 0);
-  const occupied = wards.reduce((sum, ward) => sum + ward.occupied, 0);
-  const icuWards = wards.filter((ward) => ward.icu);
-  const icuTotal = icuWards.reduce((sum, ward) => sum + ward.total, 0);
-  const icuOccupied = icuWards.reduce((sum, ward) => sum + ward.occupied, 0);
-
   return {
     filters: {
       ...defaultFilters,
       ...input?.filters,
     },
     activePage: input?.activePage,
+    pageTitle: input?.pageTitle,
     lastUpdated: input?.lastUpdated,
     exactMetrics: {
       beds: {
-        total,
-        occupied,
-        available: total - occupied,
-        occupancyRate: `${((occupied / total) * 100).toFixed(1)}%`,
-        icuTotal,
-        icuOccupied,
-        icuAvailable: icuTotal - icuOccupied,
-        byWard: wards,
+        total: bedAvailability.totalBeds,
+        occupied: bedAvailability.occupiedBeds,
+        available: bedAvailability.availableBeds,
+        occupancyRate: `${bedAvailability.occupancyRate}%`,
+        icuTotal: bedAvailability.icu.totalBeds,
+        icuOccupied: bedAvailability.icu.occupiedBeds,
+        icuAvailable: bedAvailability.icu.availableBeds,
+        byWard: bedAvailability.wards,
       },
     },
     dashboardData: {

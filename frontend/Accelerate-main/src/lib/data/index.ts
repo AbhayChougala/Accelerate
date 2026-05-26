@@ -1,6 +1,6 @@
 import type { Alert, Branch, DepartmentMetric, KpiMetric } from "../types";
 
-export const HOSPITAL_NAME = "MedVista Health Network";
+export const HOSPITAL_NAME = "Accelerate Health Network";
 export const BRANCHES = ["All Branches", "Mumbai Central", "Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Chennai"];
 export const DEPARTMENTS = ["All Departments", "Cardiology", "Oncology", "Orthopedics", "Neurology", "General Medicine", "Pediatrics", "Emergency", "Diagnostics", "Pharmacy"];
 export const DOCTORS = ["All Doctors", "Dr. Sharma", "Dr. Patel", "Dr. Reddy", "Dr. Iyer", "Dr. Khan", "Dr. Mehta"];
@@ -12,7 +12,7 @@ export const ceoKpis: KpiMetric[] = [
   { id: "opd", label: "OPD Patients Today", value: "2,847", change: 12.3, trend: "up" },
   { id: "ipd", label: "IPD Admissions", value: "186", change: -2.1, trend: "down" },
   { id: "icu", label: "ICU Occupancy", value: "89%", change: 4.2, trend: "up", status: "warning" },
-  { id: "beds", label: "Bed Occupancy", value: "82.4%", change: 1.8, trend: "up" },
+  { id: "beds", label: "Bed Occupancy", value: "82.9%", change: 1.8, trend: "up" },
   { id: "alos", label: "Avg Length of Stay", value: "4.2 days", change: -0.3, trend: "down", status: "good" },
   { id: "ot", label: "OT Utilization", value: "76%", change: 6.5, trend: "up" },
   { id: "claims", label: "Claim Approval Rate", value: "91.2%", change: 2.1, trend: "up" },
@@ -40,7 +40,7 @@ export const revenueTrend = [
 
 export const hospitalHealthScore = 87;
 
-export const executiveSummary = `MedVista network delivered strong MTD performance with ₹42.8 Cr revenue (+8.4% YoY). Mumbai Central and Bangalore branches exceeded targets. ICU occupancy at 89% requires capacity review. Ayushman Bharat volume up 14% with improved claim turnaround. Diagnostics and pharmacy continue as high-margin growth drivers.`;
+export const executiveSummary = `Accelerate network delivered strong MTD performance with ₹42.8 Cr revenue (+8.4% YoY). Mumbai Central and Bangalore branches exceeded targets. ICU occupancy at 89% requires capacity review. Ayushman Bharat volume up 14% with improved claim turnaround. Diagnostics and pharmacy continue as high-margin growth drivers.`;
 
 export const aiRecommendations = [
   { id: "1", priority: "high", text: "Expand ICU beds at Mumbai Central — projected 94% occupancy next week", impact: "₹1.2 Cr revenue at risk" },
@@ -170,10 +170,45 @@ export const wardOccupancy = [
   { ward: "Oncology", total: 36, occupied: 31, icu: false },
 ];
 
+const wardOccupancyWithAvailability = wardOccupancy.map((ward) => ({
+  ...ward,
+  available: ward.total - ward.occupied,
+}));
+
+const totalBeds = wardOccupancyWithAvailability.reduce((sum, ward) => sum + ward.total, 0);
+const occupiedBeds = wardOccupancyWithAvailability.reduce((sum, ward) => sum + ward.occupied, 0);
+const icuWards = wardOccupancyWithAvailability.filter((ward) => ward.icu);
+const icuTotalBeds = icuWards.reduce((sum, ward) => sum + ward.total, 0);
+const icuOccupiedBeds = icuWards.reduce((sum, ward) => sum + ward.occupied, 0);
+
+export const bedAvailability = {
+  totalBeds,
+  occupiedBeds,
+  availableBeds: totalBeds - occupiedBeds,
+  occupancyRate: Number(((occupiedBeds / totalBeds) * 100).toFixed(1)),
+  icu: {
+    totalBeds: icuTotalBeds,
+    occupiedBeds: icuOccupiedBeds,
+    availableBeds: icuTotalBeds - icuOccupiedBeds,
+    occupancyRate: Number(((icuOccupiedBeds / icuTotalBeds) * 100).toFixed(1)),
+  },
+  general: {
+    totalBeds: totalBeds - icuTotalBeds,
+    occupiedBeds: occupiedBeds - icuOccupiedBeds,
+    availableBeds: totalBeds - icuTotalBeds - (occupiedBeds - icuOccupiedBeds),
+  },
+  wards: wardOccupancyWithAvailability,
+};
+
+export const ventilatorAvailability = {
+  total: 20,
+  available: 2,
+};
+
 export const predictiveForecasts = [
   { metric: "Patient Inflow", current: 2847, predicted: 3120, confidence: 89 },
   { metric: "Revenue (Cr)", current: 42.8, predicted: 45.1, confidence: 85 },
-  { metric: "Bed Occupancy %", current: 82.4, predicted: 86.2, confidence: 91 },
+  { metric: "Bed Occupancy %", current: 82.9, predicted: 86.2, confidence: 91 },
   { metric: "Staff Attrition %", current: 8.2, predicted: 7.8, confidence: 78 },
   { metric: "Readmission %", current: 3.8, predicted: 3.5, confidence: 82 },
 ];

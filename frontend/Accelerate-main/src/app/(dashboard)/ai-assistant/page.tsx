@@ -21,12 +21,12 @@ const suggestions = [
 ];
 
 export default function AIAssistantPage() {
-  const { filters, lastUpdated } = useDashboard();
+  const { filters, lastUpdated, currentPageTitle } = useDashboard();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
-        "Welcome. I'm MedMind AI, your executive intelligence copilot. Ask about revenue, occupancy, staff burnout, pharmacy, or patient sentiment.",
+        "Welcome. I'm Accelerate AI, your executive intelligence copilot. Ask about revenue, occupancy, staff burnout, pharmacy, or patient sentiment.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -55,7 +55,14 @@ export default function AIAssistantPage() {
           messages: nextMessages,
           filters,
           activePage: window.location.pathname,
+          pageTitle: currentPageTitle,
           lastUpdated: lastUpdated.toISOString(),
+          frontendContext: {
+            pageTitle: currentPageTitle,
+            path: window.location.pathname,
+            filters,
+            lastUpdated: lastUpdated.toISOString(),
+          },
         }),
       });
       const data = await response.json();
@@ -93,7 +100,7 @@ export default function AIAssistantPage() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold tracking-tight">MedMind AI</h2>
+              <h2 className="text-lg font-semibold tracking-tight">Accelerate AI</h2>
               <p className="text-xs text-[var(--muted)]">Your Executive Intelligence Copilot</p>
             </div>
           </div>
@@ -115,7 +122,7 @@ export default function AIAssistantPage() {
               >
                 {msg.role === "assistant" && (
                   <span className="text-[10px] font-semibold text-[var(--primary)] uppercase tracking-wide block mb-1">
-                    MedMind
+                    Accelerate
                   </span>
                 )}
                 {msg.content}
@@ -149,7 +156,7 @@ export default function AIAssistantPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send(input)}
               disabled={typing}
-              placeholder="Ask MedMind anything about your hospital..."
+              placeholder="Ask Accelerate anything about your hospital..."
               className="flex-1 h-10 px-4 rounded-lg border border-[var(--border)] bg-[var(--card)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]"
             />
             <Button variant="outline" size="icon" title="Voice">

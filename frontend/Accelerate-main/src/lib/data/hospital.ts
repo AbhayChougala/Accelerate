@@ -1,15 +1,15 @@
 export const HOSPITAL_DATA = {
   kpis: {
-    revenue: "₹4.2Cr",
+    revenue: "₹42.8 Cr",
     revenueDelta: 12,
-    netProfit: "₹1.1Cr",
+    netProfit: "₹6.2 Cr",
     profitDelta: 8,
-    icuOccupancy: 87,
-    bedOccupancy: 76,
-    opdCount: 1243,
-    satisfaction: 4.3,
-    insuranceApproval: 78,
-    emergencyCases: 34,
+    icuOccupancy: 89,
+    bedOccupancy: 82.9,
+    opdCount: 2847,
+    satisfaction: 4.6,
+    insuranceApproval: 91.2,
+    emergencyCases: 124,
   },
   departments: [
     { name: "Cardiology", revenue: 1.2, patients: 342, satisfaction: 4.6, growth: 18 },

@@ -17,12 +17,12 @@ const suggestions = [
 ];
 
 export function AIChat() {
-  const { chatOpen, setChatOpen, filters, lastUpdated } = useDashboard();
+  const { chatOpen, setChatOpen, filters, lastUpdated, currentPageTitle } = useDashboard();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
-        "Hello! I'm MedVista AI, your executive analytics assistant. Ask me about hospital performance, predictions, or strategic insights.",
+        "Hello! I'm Accelerate AI, your executive analytics assistant. Ask me about hospital performance, predictions, or strategic insights.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -51,7 +51,14 @@ export function AIChat() {
           messages: nextMessages,
           filters,
           activePage: window.location.pathname,
+          pageTitle: currentPageTitle,
           lastUpdated: lastUpdated.toISOString(),
+          frontendContext: {
+            pageTitle: currentPageTitle,
+            path: window.location.pathname,
+            filters,
+            lastUpdated: lastUpdated.toISOString(),
+          },
         }),
       });
       const data = await response.json();
@@ -103,7 +110,7 @@ export function AIChat() {
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">MedVista AI</p>
+                  <p className="font-semibold text-sm">Accelerate AI</p>
                   <p className="text-xs text-[var(--muted)]">Executive Intelligence</p>
                 </div>
               </div>

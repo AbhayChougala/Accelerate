@@ -62,7 +62,7 @@ export default function BranchesDashboard() {
       <GlassCard>
         <SectionHeader title="Geographic Branch Map" subtitle="Bubble size = revenue (₹ Cr)" />
         <div className="relative w-full h-64 bg-gradient-to-br from-sky-50 to-violet-50 dark:from-slate-900 dark:to-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-          <p className="absolute top-2 left-3 text-xs text-[var(--muted)]">India — MedVista Network</p>
+          <p className="absolute top-2 left-3 text-xs text-[var(--muted)]">India — Accelerate Network</p>
           {indiaBranches.map((b) => (
             <div
               key={b.city}

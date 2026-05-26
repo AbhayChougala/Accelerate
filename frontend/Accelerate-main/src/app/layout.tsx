@@ -3,7 +3,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MedMind | Hospital CEO Executive Dashboard",
+  title: "Accelerate | Hospital CEO Executive Dashboard",
   description: "Premium healthcare executive BI command center",
 };
 
@@ -17,7 +17,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('medmind-theme');document.documentElement.classList.toggle('dark',t==='dark');}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('accelerate-theme');document.documentElement.classList.toggle('dark',t==='dark');}catch(e){}})();`,
           }}
         />
       </head>

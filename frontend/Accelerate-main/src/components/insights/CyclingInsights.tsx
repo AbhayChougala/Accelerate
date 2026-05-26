@@ -17,7 +17,7 @@ export function CyclingInsights() {
     <Card className="ring-1 ring-[var(--primary)]/15">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="h-4 w-4 text-[var(--primary)]" />
-        <h3 className="text-sm font-semibold">MedMind AI Insights</h3>
+        <h3 className="text-sm font-semibold">Accelerate AI Insights</h3>
       </div>
       <p key={idx} className="text-sm text-[var(--muted)] leading-relaxed insight-fade">
         {AI_INSIGHTS[idx]}

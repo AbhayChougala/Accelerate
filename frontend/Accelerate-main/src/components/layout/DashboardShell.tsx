@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
 import { FloatingChat } from "./FloatingChat";
+import { useDashboard } from "@/context/DashboardContext";
 
 export function DashboardShell({
   title,
@@ -13,6 +15,12 @@ export function DashboardShell({
   children: React.ReactNode;
   insights?: React.ReactNode;
 }) {
+  const { setCurrentPageTitle } = useDashboard();
+
+  useEffect(() => {
+    setCurrentPageTitle(title);
+  }, [setCurrentPageTitle, title]);
+
   return (
     <div className="flex min-h-screen bg-[var(--background)]">
       <Sidebar />

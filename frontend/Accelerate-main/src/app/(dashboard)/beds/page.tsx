@@ -4,7 +4,7 @@ import { RingGauge } from "@/components/ui/RingGauge";
 import { DashboardPage, Card, CardHeader } from "@/components/dashboard/DashboardPage";
 import { Badge } from "@/components/ui/badge";
 import { useChartTheme, getTooltipStyle, CHART_COLORS } from "@/hooks/useChartTheme";
-import { HOSPITAL_DATA } from "@/lib/data/hospital";
+import { bedAvailability, ventilatorAvailability } from "@/lib/data";
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ReferenceLine, ReferenceArea, Legend,
@@ -28,50 +28,56 @@ const forecastData = [
 ];
 
 function WardHeatmap() {
-  const cells = Array.from({ length: 36 }, (_, i) => {
-    const r = i % 6;
-    const c = Math.floor(i / 6);
-    const rand = (r * 7 + c * 11 + i) % 100;
-    const status = rand < 15 ? "available" : rand < 40 ? "occupied" : "critical";
-    const colors = {
-      available: CHART_COLORS.primary,
-      occupied: CHART_COLORS.warning,
-      critical: CHART_COLORS.danger,
-    };
-    return { id: `${String.fromCharCode(65 + r)}-${c + 1}${(i % 3) + 1}`, status, color: colors[status] };
-  });
-
   return (
     <div>
-      <div className="grid grid-cols-6 gap-1.5">
-        {cells.map((cell) => (
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {bedAvailability.wards.map((ward) => {
+          const occupancy = Math.round((ward.occupied / ward.total) * 100);
+          const status = occupancy >= 90 ? "critical" : occupancy >= 75 ? "occupied" : "available";
+          const colors = {
+            available: CHART_COLORS.primary,
+            occupied: CHART_COLORS.warning,
+            critical: CHART_COLORS.danger,
+          };
+
+          return (
           <div
-            key={cell.id}
-            title={`Bed ${cell.id}: ${cell.status}`}
-            className="aspect-square rounded-md cursor-pointer hover:ring-2 hover:ring-[var(--primary)]/30 transition-all"
-            style={{ background: cell.color, opacity: cell.status === "available" ? 0.65 : 1 }}
-          />
-        ))}
+            key={ward.ward}
+            title={`${ward.ward}: ${ward.available}/${ward.total} available`}
+            className="rounded-lg p-2 text-xs text-white cursor-pointer hover:ring-2 hover:ring-[var(--primary)]/30 transition-all"
+            style={{ background: colors[status], opacity: status === "available" ? 0.72 : 1 }}
+          >
+            <p className="font-semibold truncate">{ward.ward}</p>
+            <p className="mt-1">{ward.occupied}/{ward.total}</p>
+            <p className="text-[10px] opacity-85">{ward.available} available</p>
+          </div>
+          );
+        })}
       </div>
       <div className="flex gap-4 mt-3 text-xs text-[var(--muted)]">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--primary)]" /> Available</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--warning)]" /> Occupied</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--danger)]" /> Critical</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--primary)]" /> Below 75%</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--warning)]" /> 75-89%</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--danger)]" /> 90%+</span>
       </div>
     </div>
   );
 }
 
 export default function BedsPage() {
-  const { kpis } = HOSPITAL_DATA;
   const chart = useChartTheme();
 
   return (
     <DashboardPage title="Bed & ICU Prediction" subtitle="Live occupancy and AI 7-day forecast">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Card className="flex justify-center py-6" delay={1}><RingGauge value={kpis.icuOccupancy} max={100} label="ICU Beds" color={CHART_COLORS.danger} /></Card>
-        <Card className="flex justify-center py-6" delay={2}><RingGauge value={234} max={300} label="General Ward" color={CHART_COLORS.warning} /></Card>
-        <Card className="flex justify-center py-6" delay={3}><RingGauge value={12} max={20} label="Ventilators Available" color={CHART_COLORS.primary} /></Card>
+        <Card className="flex justify-center py-6" delay={1}>
+          <RingGauge value={bedAvailability.icu.occupiedBeds} max={bedAvailability.icu.totalBeds} label="ICU Beds" color={CHART_COLORS.danger} />
+        </Card>
+        <Card className="flex justify-center py-6" delay={2}>
+          <RingGauge value={bedAvailability.general.occupiedBeds} max={bedAvailability.general.totalBeds} label="General Ward" color={CHART_COLORS.warning} />
+        </Card>
+        <Card className="flex justify-center py-6" delay={3}>
+          <RingGauge value={ventilatorAvailability.available} max={ventilatorAvailability.total} label="Ventilators Available" color={CHART_COLORS.primary} />
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">

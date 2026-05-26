@@ -75,7 +75,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">MedMind</p>
+            <p className="text-sm font-semibold truncate">Accelerate</p>
             <p className="text-[10px] text-[var(--muted)]">Executive BI</p>
           </div>
         )}

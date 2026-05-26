@@ -14,10 +14,11 @@ import { CyclingInsights } from "@/components/insights/CyclingInsights";
 import { Badge } from "@/components/ui/badge";
 import { useChartTheme, getTooltipStyle, CHART_COLORS } from "@/hooks/useChartTheme";
 import {
-  HOSPITAL_DATA, REVENUE_TREND_30, BED_OCCUPANCY_30, EMERGENCY_WEEKLY, SMART_ALERTS,
+  HOSPITAL_DATA, BED_OCCUPANCY_30, EMERGENCY_WEEKLY, SMART_ALERTS,
 } from "@/lib/data/hospital";
+import { revenueTrend, topDepartments } from "@/lib/data";
 
-const { kpis, departments } = HOSPITAL_DATA;
+const { kpis } = HOSPITAL_DATA;
 
 export default function ExecutiveDashboard() {
   const chart = useChartTheme();
@@ -44,9 +45,9 @@ export default function ExecutiveDashboard() {
           <CardHeader title="Revenue Trend" subtitle="30 days · ₹ Crores" />
           {chart.mounted && (
             <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={REVENUE_TREND_30}>
+              <LineChart data={revenueTrend}>
                 <CartesianGrid stroke={chart.grid} strokeDasharray="3 3" />
-                <XAxis dataKey="day" tick={{ fontSize: 10, fill: chart.text }} interval={4} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: chart.text }} />
                 <YAxis tick={{ fontSize: 10, fill: chart.text }} />
                 <Tooltip contentStyle={getTooltipStyle(chart)} />
                 <Line type="monotone" dataKey="revenue" stroke={CHART_COLORS.primary} strokeWidth={2} dot={false} />
@@ -58,7 +59,7 @@ export default function ExecutiveDashboard() {
           <CardHeader title="Department Performance" subtitle="Revenue · ₹ Cr" />
           {chart.mounted && (
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={departments} layout="vertical" margin={{ left: 72 }}>
+              <BarChart data={topDepartments} layout="vertical" margin={{ left: 72 }}>
                 <CartesianGrid stroke={chart.grid} strokeDasharray="3 3" />
                 <XAxis type="number" tick={{ fontSize: 10, fill: chart.text }} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: chart.text }} width={68} />

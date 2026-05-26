@@ -15,6 +15,8 @@ interface DashboardContextType {
   notificationsOpen: boolean;
   setNotificationsOpen: (open: boolean) => void;
   lastUpdated: Date;
+  currentPageTitle: string;
+  setCurrentPageTitle: (title: string) => void;
 }
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
@@ -31,14 +33,15 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [currentPageTitle, setCurrentPageTitle] = useState("Executive Dashboard");
 
   useEffect(() => {
-    const saved = localStorage.getItem("medmind-sidebar-collapsed");
+    const saved = localStorage.getItem("accelerate-sidebar-collapsed");
     if (saved === "true") setSidebarCollapsed(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("medmind-sidebar-collapsed", String(sidebarCollapsed));
+    localStorage.setItem("accelerate-sidebar-collapsed", String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
   useEffect(() => {
@@ -63,6 +66,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         notificationsOpen,
         setNotificationsOpen,
         lastUpdated,
+        currentPageTitle,
+        setCurrentPageTitle,
       }}
     >
       {children}

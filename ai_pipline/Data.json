@@ -1,5 +1,5 @@
 {
-  "project": "MedVista Health Network Executive Dashboard",
+  "project": "Accelerate Health Network Executive Dashboard",
   "purpose": "Reference context for the Gemini-powered dashboard chatbot.",
   "lastCurated": "2026-05-26",
   "sourceOfTruth": [
@@ -35,7 +35,7 @@
     "opdPatientsToday": 2847,
     "ipdAdmissions": 186,
     "icuOccupancy": "89%",
-    "bedOccupancyKpi": "82.4%",
+    "bedOccupancyKpi": "82.9%",
     "avgLengthOfStay": "4.2 days",
     "otUtilization": "76%",
     "claimApprovalRate": "91.2%",

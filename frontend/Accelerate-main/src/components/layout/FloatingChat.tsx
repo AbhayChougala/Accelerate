@@ -11,7 +11,7 @@ import { useDashboard } from "@/context/DashboardContext";
 type Message = { role: "user" | "bot"; text: string };
 
 export function FloatingChat() {
-  const { filters, lastUpdated } = useDashboard();
+  const { filters, lastUpdated, currentPageTitle } = useDashboard();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,14 @@ export function FloatingChat() {
           })),
           filters,
           activePage: window.location.pathname,
+          pageTitle: currentPageTitle,
           lastUpdated: lastUpdated.toISOString(),
+          frontendContext: {
+            pageTitle: currentPageTitle,
+            path: window.location.pathname,
+            filters,
+            lastUpdated: lastUpdated.toISOString(),
+          },
         }),
       });
       const data = await response.json();
@@ -104,7 +111,7 @@ export function FloatingChat() {
                     <Bot className="h-4 w-4 text-[var(--primary)]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold">MedMind Quick</p>
+                    <p className="text-sm font-semibold">Accelerate Quick</p>
                     <p className="text-[10px] text-[var(--muted)]">Executive assistant</p>
                   </div>
                 </div>
