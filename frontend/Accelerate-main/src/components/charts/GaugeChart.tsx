@@ -1,12 +1,13 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { CHART_COLORS } from "@/hooks/useChartTheme";
 
 export function GaugeChart({
   value,
   max = 100,
   label,
-  color = "#0ea5e9",
+  color = CHART_COLORS.primary,
 }: {
   value: number;
   max?: number;
@@ -35,11 +36,13 @@ export function GaugeChart({
             stroke="none"
           >
             <Cell fill={color} />
-            <Cell fill="#e2e8f0" className="dark:fill-slate-700" />
+            <Cell fill="var(--border)" />
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <p className="text-2xl font-bold -mt-8">{value}{max === 100 ? "%" : ""}</p>
+      <p className="text-2xl font-semibold tracking-tight -mt-8 text-[var(--foreground)]">
+        {value}{max === 100 ? "%" : ""}
+      </p>
       <p className="text-xs text-[var(--muted)] mt-1">{label}</p>
     </div>
   );

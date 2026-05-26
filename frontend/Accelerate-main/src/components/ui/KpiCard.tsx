@@ -1,53 +1,70 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { KpiMetric } from "@/lib/types";
+import { TrendingDown, TrendingUp, Minus, type LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
-const statusColors = {
-  good: "border-emerald-200/60 dark:border-emerald-800/40",
-  warning: "border-amber-200/60 dark:border-amber-800/40",
-  critical: "border-red-200/60 dark:border-red-800/40",
-};
-
-export function KpiCard({ metric, index = 0 }: { metric: KpiMetric; index?: number }) {
+export function KpiCard({
+  label,
+  value,
+  change,
+  trend,
+  icon: Icon,
+  subtitle,
+  critical,
+  index = 0,
+}: {
+  label: string;
+  value: string | number;
+  change?: number;
+  trend?: "up" | "down" | "neutral";
+  icon?: LucideIcon;
+  subtitle?: string;
+  critical?: boolean;
+  index?: number;
+}) {
   const TrendIcon =
-    metric.trend === "up" ? TrendingUp : metric.trend === "down" ? TrendingDown : Minus;
-  const trendColor =
-    metric.trend === "up"
-      ? metric.status === "warning"
-        ? "text-amber-600"
-        : "text-emerald-600"
-      : metric.trend === "down"
-        ? metric.status === "good"
-          ? "text-emerald-600"
-          : "text-red-500"
-        : "text-slate-500";
+    trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendPositive = change !== undefined && change >= 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03, duration: 0.35 }}
+      transition={{ delay: index * 0.04, duration: 0.3 }}
       className={cn(
-        "glass-card p-4 hover:shadow-md transition-shadow cursor-default",
-        metric.status && statusColors[metric.status]
+        "dashboard-card p-5 flex flex-col justify-between min-h-[120px]",
+        critical && "ring-1 ring-[var(--danger)]/25 border-[var(--danger)]/20"
       )}
     >
-      <p className="text-xs font-medium text-[var(--muted)] uppercase tracking-wide truncate">
-        {metric.label}
-      </p>
-      <p className="mt-1 text-xl font-bold text-[var(--foreground)] tabular-nums">
-        {metric.value}
-      </p>
-      {metric.change !== undefined && (
-        <div className={cn("mt-2 flex items-center gap-1 text-xs font-medium", trendColor)}>
-          <TrendIcon className="h-3.5 w-3.5" />
-          <span>{metric.change > 0 ? "+" : ""}{metric.change}%</span>
-          <span className="text-[var(--muted)] font-normal">vs last period</span>
-        </div>
-      )}
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-medium text-[var(--muted)] uppercase tracking-wide">{label}</p>
+        {Icon && (
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary-light)] dark:bg-[color-mix(in_srgb,var(--primary)_15%,transparent)]">
+            <Icon className="h-4 w-4 text-[var(--primary)]" />
+          </div>
+        )}
+      </div>
+      <div className="mt-3">
+        <p className="text-2xl font-semibold tracking-tight text-[var(--foreground)] tabular-nums">
+          {value}
+        </p>
+        {subtitle && <p className="text-xs text-[var(--muted)] mt-0.5">{subtitle}</p>}
+        {change !== undefined && (
+          <div
+            className={cn(
+              "mt-2 inline-flex items-center gap-1 text-xs font-medium rounded-md px-1.5 py-0.5",
+              trendPositive
+                ? "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40"
+                : "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950/40"
+            )}
+          >
+            <TrendIcon className="h-3 w-3" />
+            {trendPositive ? "+" : ""}
+            {change}%
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }

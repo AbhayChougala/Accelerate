@@ -41,7 +41,9 @@ export interface NavItem {
   href: string;
   label: string;
   icon: string;
+  emoji?: string;
   badge?: string;
+  premium?: boolean;
 }
 
 export interface FilterState {

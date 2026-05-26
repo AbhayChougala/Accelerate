@@ -2,6 +2,7 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { ChartTooltipContent } from "./ChartTooltip";
+import { CHART_COLORS } from "@/hooks/useChartTheme";
 
 interface DonutItem {
   name: string;
@@ -10,12 +11,10 @@ interface DonutItem {
   fill?: string;
 }
 
-const DEFAULT_COLORS = ["#0ea5e9", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899", "#6366f1", "#14b8a6"];
-
 export function DonutChart({ data, height = 260 }: { data: DonutItem[]; height?: number }) {
   const chartData = data.map((d, i) => ({
     ...d,
-    fill: d.fill || d.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+    fill: d.fill || d.color || CHART_COLORS.palette[i % CHART_COLORS.palette.length],
   }));
 
   return (

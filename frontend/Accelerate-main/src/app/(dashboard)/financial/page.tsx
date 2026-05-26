@@ -1,84 +1,148 @@
 "use client";
 
-import { DashboardPage, SectionHeader, GlassCard } from "@/components/dashboard/DashboardPage";
-import { DonutChart } from "@/components/charts/DonutChart";
-import { RevenueTrendChart } from "@/components/charts/RevenueTrendChart";
-import { BarChartCard } from "@/components/charts/BarChartCard";
-import { SankeyFlow } from "@/components/charts/SankeyFlow";
 import {
-  revenueByDepartment,
-  opdVsIpd,
-  expenseBreakdown,
-  revenueTrend,
-  branchComparison,
-  sankeyFlow,
-} from "@/lib/data";
-import type { KpiMetric } from "@/lib/types";
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  PieChart, Pie, Cell, Legend,
+} from "recharts";
+import { AlertTriangle } from "lucide-react";
+import { DashboardPage, Card, CardHeader } from "@/components/dashboard/DashboardPage";
+import { Badge } from "@/components/ui/badge";
+import { DataTable, TableHead, TableBody, Th, Td, Tr } from "@/components/tables/DataTable";
+import { useChartTheme, getTooltipStyle, CHART_COLORS } from "@/hooks/useChartTheme";
+import { HOSPITAL_DATA } from "@/lib/data/hospital";
 
-const kpis: KpiMetric[] = [
-  { id: "1", label: "Gross Margin", value: "38.2%", change: 1.4, trend: "up", status: "good" },
-  { id: "2", label: "Net Margin", value: "14.5%", change: 0.8, trend: "up" },
-  { id: "3", label: "EBITDA", value: "₹9.4 Cr", change: 3.8, trend: "up" },
-  { id: "4", label: "Cost per Patient", value: "₹18,420", change: -2.1, trend: "down", status: "good" },
-  { id: "5", label: "Cost per Bed", value: "₹42,800", change: 1.2, trend: "up" },
-  { id: "6", label: "Outstanding Dues", value: "₹4.2 Cr", change: -8.4, trend: "down", status: "warning" },
-  { id: "7", label: "Budget vs Actual", value: "102%", change: 2.0, trend: "up" },
-  { id: "8", label: "GST Liability (MTD)", value: "₹1.8 Cr", change: 6.2, trend: "up" },
+const { departments, pendingClaims } = HOSPITAL_DATA;
+
+const insuranceData = [
+  { name: "Approved", value: 78, color: CHART_COLORS.primary },
+  { name: "Pending", value: 14, color: CHART_COLORS.warning },
+  { name: "Rejected", value: 8, color: CHART_COLORS.danger },
 ];
 
-export default function FinancialDashboard() {
+const expenseMonths = [
+  { month: "Jan", salaries: 2.4, equipment: 0.8, pharma: 0.48, utilities: 0.32 },
+  { month: "Feb", salaries: 2.5, equipment: 0.75, pharma: 0.5, utilities: 0.33 },
+  { month: "Mar", salaries: 2.52, equipment: 0.82, pharma: 0.52, utilities: 0.34 },
+  { month: "Apr", salaries: 2.48, equipment: 0.78, pharma: 0.49, utilities: 0.32 },
+  { month: "May", salaries: 2.55, equipment: 0.85, pharma: 0.54, utilities: 0.35 },
+  { month: "Jun", salaries: 2.58, equipment: 0.88, pharma: 0.56, utilities: 0.36 },
+];
+
+function deptStatus(growth: number) {
+  if (growth <= -20) return { label: "Anomaly", variant: "danger" as const };
+  if (growth >= 10) return { label: "Growing", variant: "success" as const };
+  return { label: "Normal", variant: "default" as const };
+}
+
+export default function FinancialPage() {
+  const chart = useChartTheme();
+
   return (
-    <DashboardPage title="Financial Analytics" subtitle="Revenue, profitability, expenses & cash flow intelligence" kpis={kpis}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <GlassCard>
-          <SectionHeader title="Revenue Mix (OPD vs IPD vs Services)" />
-          <DonutChart data={opdVsIpd} />
-        </GlassCard>
-        <GlassCard delay={0.05}>
-          <SectionHeader title="Revenue by Department" />
-          <DonutChart data={revenueByDepartment} />
-        </GlassCard>
+    <DashboardPage title="Financial Analytics" subtitle="Revenue, profitability, and insurance intelligence">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <Card delay={1}>
+          <CardHeader title="Revenue by Department" />
+          {chart.mounted && (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={departments}>
+                <CartesianGrid stroke={chart.grid} strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: chart.text }} />
+                <YAxis tick={{ fontSize: 10, fill: chart.text }} />
+                <Tooltip contentStyle={getTooltipStyle(chart)} />
+                <Bar dataKey="revenue" fill={CHART_COLORS.primary} radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+        <DataTable>
+          <TableHead>
+            <Th>Department</Th><Th>Revenue</Th><Th>Growth</Th><Th>Status</Th>
+          </TableHead>
+          <TableBody>
+            {departments.map((d) => {
+              const st = deptStatus(d.growth);
+              return (
+                <Tr key={d.name} highlight={d.growth <= -20 ? "danger" : undefined}>
+                  <Td className="font-medium">{d.name}</Td>
+                  <Td>₹{d.revenue}Cr</Td>
+                  <Td className={d.growth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>
+                    {d.growth > 0 ? "+" : ""}{d.growth}%
+                  </Td>
+                  <Td><Badge variant={st.variant}>{st.label}</Badge></Td>
+                </Tr>
+              );
+            })}
+          </TableBody>
+        </DataTable>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <GlassCard className="lg:col-span-2">
-          <SectionHeader title="Revenue Trend & AI Profit Forecast" />
-          <RevenueTrendChart data={revenueTrend} />
-        </GlassCard>
-        <GlassCard>
-          <SectionHeader title="Expense Breakdown (₹ Cr)" />
-          <BarChartCard data={expenseBreakdown} dataKey="amount" xKey="category" color="#8b5cf6" />
-        </GlassCard>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <GlassCard>
-          <SectionHeader title="Revenue Flow (Patient Journey)" subtitle="Sankey-style revenue attribution" />
-          <SankeyFlow data={sankeyFlow} />
-        </GlassCard>
-        <GlassCard>
-          <SectionHeader title="Branch Revenue Comparison" />
-          <BarChartCard
-            data={branchComparison.map((b) => ({ name: b.city, revenue: b.revenue, profit: b.profit }))}
-            dataKey="revenue"
-            xKey="name"
-            color="#0ea5e9"
-          />
-        </GlassCard>
-      </div>
-      <GlassCard>
-        <SectionHeader title="Financial Intelligence" subtitle="AI-detected anomalies & insights" />
-        <div className="grid sm:grid-cols-3 gap-4">
-          {[
-            { title: "Revenue Anomaly", desc: "Orthopedics -14% vs forecast — elective surgery decline", severity: "warning" },
-            { title: "Delayed Payments", desc: "₹2.3 Cr insurance settlements pending >45 days", severity: "critical" },
-            { title: "Profit Prediction", desc: "Q2 forecast: ₹19.2 Cr profit (+7.2% YoY) at 85% confidence", severity: "good" },
-          ].map((item) => (
-            <div key={item.title} className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/40">
-              <p className="font-medium text-sm">{item.title}</p>
-              <p className="text-xs text-[var(--muted)] mt-1">{item.desc}</p>
-            </div>
-          ))}
+
+      <Card delay={3} className="mb-4 ring-1 ring-[var(--danger)]/20 border-[var(--danger)]/20">
+        <div className="flex gap-3">
+          <AlertTriangle className="h-5 w-5 text-[var(--danger)] shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--danger)]">Revenue Anomaly — Radiology</h3>
+            <p className="text-sm text-[var(--muted)] mt-1 leading-relaxed">
+              Revenue dropped ₹21.6L (27%) vs previous month. Possible causes: equipment downtime, reduced referrals, billing errors.
+              <span className="text-[var(--foreground)] font-medium"> Recommended: Audit Radiology billing logs.</span>
+            </p>
+          </div>
         </div>
-      </GlassCard>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <Card delay={4}>
+          <CardHeader title="Insurance Claims" />
+          {chart.mounted && (
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie data={insuranceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value">
+                  {insuranceData.map((e) => <Cell key={e.name} fill={e.color} />)}
+                </Pie>
+                <Legend />
+                <Tooltip contentStyle={getTooltipStyle(chart)} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+        <DataTable>
+          <TableHead>
+            <Th>Patient</Th><Th>Amount</Th><Th>Days</Th><Th>Risk</Th>
+          </TableHead>
+          <TableBody>
+            {pendingClaims.map((c) => (
+              <Tr key={c.patient}>
+                <Td>{c.patient}</Td>
+                <Td>{c.amount}</Td>
+                <Td>{c.days}</Td>
+                <Td>
+                  <Badge variant={c.risk === "High" ? "danger" : c.risk === "Med" ? "warning" : "success"}>
+                    {c.risk}
+                  </Badge>
+                </Td>
+              </Tr>
+            ))}
+          </TableBody>
+        </DataTable>
+      </div>
+
+      <Card delay={6}>
+        <CardHeader title="Expense Breakdown" subtitle="6 months · stacked" />
+        {chart.mounted && (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={expenseMonths}>
+              <CartesianGrid stroke={chart.grid} strokeDasharray="3 3" />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: chart.text }} />
+              <YAxis tick={{ fontSize: 10, fill: chart.text }} />
+              <Tooltip contentStyle={getTooltipStyle(chart)} />
+              <Legend />
+              <Bar dataKey="salaries" stackId="a" fill={CHART_COLORS.primary} name="Salaries" />
+              <Bar dataKey="equipment" stackId="a" fill={CHART_COLORS.primaryLight} name="Equipment" />
+              <Bar dataKey="pharma" stackId="a" fill={CHART_COLORS.warning} name="Pharma" />
+              <Bar dataKey="utilities" stackId="a" fill={CHART_COLORS.slate} name="Utilities" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </Card>
     </DashboardPage>
   );
 }
