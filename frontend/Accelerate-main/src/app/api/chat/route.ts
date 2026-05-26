@@ -82,6 +82,21 @@ function extractGeminiText(payload: {
   return payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("").trim();
 }
 
+function getConversationalReply(message: string) {
+  const normalized = message.toLowerCase().replace(/[^\w\s]/g, "").trim();
+  const greetings = new Set(["hi", "hello", "hey", "hey there", "good morning", "good afternoon", "good evening"]);
+
+  if (greetings.has(normalized)) {
+    return "Hello! I can help with hospital performance, bed availability, ICU occupancy, profitability, departments, claims, and forecasts. What would you like to check?";
+  }
+
+  if (["thanks", "thank you", "thx"].includes(normalized)) {
+    return "You're welcome. Ask me whenever you want to inspect another hospital metric.";
+  }
+
+  return null;
+}
+
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -96,6 +111,11 @@ export async function POST(request: Request) {
   const message = body.message?.trim();
   if (!message) {
     return NextResponse.json({ error: "Message is required." }, { status: 400 });
+  }
+
+  const conversationalReply = getConversationalReply(message);
+  if (conversationalReply) {
+    return NextResponse.json({ reply: conversationalReply });
   }
 
   const dashboardContext = buildDashboardContext({

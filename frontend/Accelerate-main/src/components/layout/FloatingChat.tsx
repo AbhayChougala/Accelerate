@@ -4,32 +4,69 @@ import { Bot } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send } from "lucide-react";
-import { chatResponses } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDashboard } from "@/context/DashboardContext";
 
-function getReply(text: string) {
-  const l = text.toLowerCase();
-  if (l.includes("profit") || l.includes("decline")) return chatResponses.profitability;
-  if (l.includes("department")) return chatResponses.departments;
-  if (l.includes("icu") || l.includes("predict")) return chatResponses.icu;
-  return chatResponses.default;
-}
+type Message = { role: "user" | "bot"; text: string };
 
 export function FloatingChat() {
+  const { filters, lastUpdated } = useDashboard();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
     { role: "bot", text: "Hello. Ask me anything about hospital performance." },
   ]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     if (!text.trim()) return;
-    setMessages((m) => [...m, { role: "user", text }]);
+
+    const userMessage: Message = { role: "user", text };
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
     setInput("");
-    setTimeout(() => {
-      setMessages((m) => [...m, { role: "bot", text: getReply(text) }]);
-    }, 800);
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          messages: nextMessages.map((message) => ({
+            role: message.role === "bot" ? "assistant" : "user",
+            content: message.text,
+          })),
+          filters,
+          activePage: window.location.pathname,
+          lastUpdated: lastUpdated.toISOString(),
+        }),
+      });
+      const data = await response.json();
+
+      setMessages((m) => [
+        ...m,
+        {
+          role: "bot",
+          text:
+            data.reply ||
+            data.error ||
+            "I could not generate an answer from the dashboard context right now.",
+        },
+      ]);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        {
+          role: "bot",
+          text:
+            "I could not reach the chat service. Check that the Next.js server is running and Gemini is configured.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,16 +125,22 @@ export function FloatingChat() {
                     {m.text}
                   </div>
                 ))}
+                {loading && (
+                  <div className="text-sm p-2.5 rounded-xl max-w-[90%] bg-[var(--surface)] text-[var(--foreground)]">
+                    Analyzing hospital data...
+                  </div>
+                )}
               </div>
               <div className="p-3 border-t border-[var(--border)] flex gap-2">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && send(input)}
+                  disabled={loading}
                   placeholder="Quick question..."
                   className="flex-1"
                 />
-                <Button size="icon" onClick={() => send(input)}>
+                <Button size="icon" onClick={() => send(input)} disabled={loading || !input.trim()}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
